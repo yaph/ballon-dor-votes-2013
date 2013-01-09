@@ -39,7 +39,10 @@ for p in pages:
 records = zip(*[cols[h] for h in headings])
 for r in records:
     voter = r[2]
-    nodemap[voter] = {'category': r[0]}
+    nodemap[voter] = {
+        'category': r[0],
+        'votes': '|'.join(r[3:])
+    }
     add_edge(voter, r[3], 5)
     add_edge(voter, r[4], 3)
     add_edge(voter, r[5], 1)
@@ -52,5 +55,5 @@ for e in edges:
         nodemap[target] = {'category': 'Player'}
         G.add_node(target, nodemap[target])
     G.add_edge(voter, target, e[2])
-    
+
 nx.write_gexf(G, gexf, encoding='utf-8', version='1.2draft')
