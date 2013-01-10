@@ -39,6 +39,9 @@ for p in pages:
 records = zip(*[cols[h] for h in headings])
 for r in records:
     voter = r[2]
+    # fix zlatanera caused by messed up data source Ibrahimovic´ Zlatan
+    if voter.startswith('Ibrahimovic') and voter.endswith('Zlatan'):
+        voter = 'Ibrahimovic Zlatan'
     nodemap[voter] = {
         'category': r[0],
         'votes': '|'.join(r[3:])
