@@ -1,3 +1,3 @@
-# Ballon d'Or 2012 Votes
+# Ballon d'Or Male Player Votes 2013
 
-This code creates a gexf file from raw text data for the [Ballon d'Or 2012 votes network visualization](http://exploringdata.github.com/vis/ballon-dor-votes-2012/).
+This code creates a gexf file from raw text data for the [Ballon d'Or 2013 votes network visualization](http://exploringdata.github.io/vis/ballon-dor-male-players-votes-2013/).
