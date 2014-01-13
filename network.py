@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
-import json, itertools, re
+# Manual preprocessing
+#
+# Removed page numbers from extracted text and put "St. Vincent and the
+# Grenadines" on one line.
+
 import networkx as nx
 from collections import defaultdict
+import unicodecsv as csv
 
 G = nx.DiGraph()
 nodemap = {}
 edges = []
-gexf = 'ballon-dor-votes-2012.gexf'
-re_pagenum = re.compile(r'\d+/\d+')
+records = []
+gexf = 'ballon-dor-votes-2013.gexf'
+
 
 def add_edge(source, target, weight):
     global edges
@@ -15,28 +21,25 @@ def add_edge(source, target, weight):
     if 'no vote' != target:
         edges.append((source, target, {'weight': weight}))
 
+
 with open('votesraw.txt', 'r') as f:
     content = f.read()
+
 
 headings = ['Vote', 'Country', 'Name', 'First (5 points)', 'Second (3 points)', 'Third (1 point)']
 cols = defaultdict(list)
 pages = content.split(headings[0])
 for p in pages:
-    if '' == p: continue
-    text = p.decode('utf-8')
-    for i, h in enumerate(headings[1:]):
-        fields = text.split(h)
-        col = fields[0].strip('\n')
-        values = col.split('\n')
-        # remove page num from 1st col
-        last = values[-1]
-        if re_pagenum.match(last):
-            values.pop()
-        cols[headings[i]] += values
-        text = fields[1]
-    cols[headings[-1]] += text.strip('\n').split('\n')
+    if '' == p:
+        continue
 
-records = zip(*[cols[h] for h in headings])
+    text = p.decode('utf-8')
+    lines = filter(None, text.split('\n'))[5:]  # omit headings
+
+    while lines:
+        records.append(lines[:6])
+        lines = lines[6:]
+
 for r in records:
     voter = r[2]
     # fix zlatanera caused by messed up data source Ibrahimovic´ Zlatan
@@ -59,4 +62,9 @@ for e in edges:
         G.add_node(target, nodemap[target])
     G.add_edge(voter, target, e[2])
 
+# write graph file and csv
+records.insert(0, headings)
 nx.write_gexf(G, gexf, encoding='utf-8', version='1.2draft')
+with open('ballon-dor-male-players-votes-2013.csv', 'wb') as f:
+    writer = csv.writer(f)
+    writer.writerows(records)
