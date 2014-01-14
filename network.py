@@ -1,33 +1,50 @@
 # -*- coding: utf-8 -*-
-# Manual preprocessing
+# Create gexf and csv files from raw votes data manually copied from
+# http://www.fifa.com/mm/document/ballond%27or/playeroftheyear%28men%29/02/26/02/68/fboaward_menplayer2013_neutral.pdf
+# to a txt file.
 #
-# Removed page numbers from extracted text and put "St. Vincent and the
-# Grenadines" on one line.
+# Text cleanup:
+# Remove page numbers and headings from extracted text and put "St. Vincent and the Grenadines" on one line.
 
+import re
 import networkx as nx
-from collections import defaultdict
 import unicodecsv as csv
 
 G = nx.DiGraph()
 nodemap = {}
 edges = []
 records = []
-gexf = 'ballon-dor-votes-2013.gexf'
+gexf = 'ballon-dor-male-players-votes-2013.gexf'
+
+
+re_pagetitle = re.compile(r"FIFA Ballon d'Or 2013\n")
+re_pagenum = re.compile(r'\d+\s*/\s*\d+\n*')
+re_vincent = re.compile(r'St. Vincent and the\s+Grenadines')
 
 
 def add_edge(source, target, weight):
-    global edges
     # skip 'no vote' values
-    if 'no vote' != target:
-        edges.append((source, target, {'weight': weight}))
+    if 'no vote' == target:
+        print(source, target, weight)
+        return
+    edges.append((source, target, {'weight': weight}))
 
 
-with open('votesraw.txt', 'r') as f:
-    content = f.read()
+with open('malevotesraw.txt', 'r') as f:
+    content = f.read().strip()
 
+# cleanup text
+content = re.sub(re_pagetitle, '', content)
+content = re.sub(re_pagenum, '', content)
+content = re.sub(re_vincent, 'St. Vincent and the Grenadines', content)
 
-headings = ['Vote', 'Country', 'Name', 'First (5 points)', 'Second (3 points)', 'Third (1 point)']
-cols = defaultdict(list)
+headings = ['Vote',
+            'Country',
+            'Name',
+            'First (5 points)',
+            'Second (3 points)',
+            'Third (1 point)']
+
 pages = content.split(headings[0])
 for p in pages:
     if '' == p:
